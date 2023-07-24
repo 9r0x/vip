@@ -1,7 +1,6 @@
 {
     "spacing": 0.05,
-    "color": "#000000",
-    "background": "#ffffff",
+    "styleSheet": "background-color: #003333; color: #669999;",
     "rows": [
         {
             "rowSpan": 0.5,
@@ -390,16 +389,6 @@
                 },
                 {
                     "type": "key",
-                    "code": 100,
-                    "label": "Alt"
-                },
-                {
-                    "type": "key",
-                    "code": 97,
-                    "label": "Ctrl"
-                },
-                {
-                    "type": "key",
                     "code": 105,
                     "label": "←"
                 },
@@ -419,8 +408,16 @@
                     "label": "→"
                 },
                 {
-                    "type": "exit",
-                    "label": "⏻"
+                    "type": "special",
+                    "code": 1,
+                    "label": "↕",
+                    "styleSheet": "color: #D46A6A;"
+                },
+                {
+                    "type": "special",
+                    "code": 0,
+                    "label": "⏻",
+                    "styleSheet": "color: #D46A6A;"
                 }
             ]
         }

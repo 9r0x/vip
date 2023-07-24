@@ -168,6 +168,9 @@ void Keyboard::setupUI(QSharedPointer<QJsonObject> layout)
         y = screenSize.height() - totalHeight;
 
     setGeometry(x, y, totalWidth, totalHeight);
+
+    if (layout->contains("styleSheet"))
+        styleSheet = (*layout)["styleSheet"].toString();
 }
 
 QSharedPointer<QJsonObject> Keyboard::loadLayout(QString filename)
@@ -231,20 +234,47 @@ void Keyboard::setupKey(QJsonObject *keyObject, int x, int y, int w, int h)
         else
             label = QString::number(code);
 
-        Key *key = new Key(x, y, w, h, code, label);
+        QString keyStylesheet = "";
+        if (keyObject->contains("styleSheet"))
+            keyStylesheet = (*keyObject)["styleSheet"].toString();
+
+        RegularKey *key = new RegularKey(x, y, w, h, code, label, keyStylesheet, this);
         keys.append(key);
-        key->setParent(this);
     }
-    else if (type == "exit")
+    else if (type == "special")
     {
+        QString keyStylesheet = "";
+        int code = (*keyObject)["code"].toInt();
+
         if (keyObject->contains("label"))
             label = (*keyObject)["label"].toString();
         else
             label = QString::number(code);
+        if (keyObject->contains("styleSheet"))
+            keyStylesheet = (*keyObject)["styleSheet"].toString();
 
-        ExitKey *key = new ExitKey(x, y, w, h, label);
-        keys.append(key);
-        key->setParent(this);
+        switch (code)
+        {
+        case SPECIAL_EXIT:
+        {
+            ExitKey *key = new ExitKey(x, y, w, h,
+                                       label, keyStylesheet, this);
+            keys.append(key);
+            break;
+        }
+        case SPECIAL_REPOSITION:
+        {
+            RepositionKey *key = new RepositionKey(x, y, w, h,
+                                                   label, keyStylesheet, this);
+            keys.append(key);
+            break;
+        }
+        default:
+        {
+            qWarning() << "Invalid Special Key";
+            exit(1);
+        }
+        }
     }
     else
     {

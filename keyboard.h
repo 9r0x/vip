@@ -10,8 +10,9 @@ public:
     explicit Keyboard(QWidget *parent = nullptr);
     ~Keyboard();
     int fd;
+    QString styleSheet;
 
-private:
+protected:
     QVector<QPushButton *> keys;
     int totalWidth;
     int totalHeight;

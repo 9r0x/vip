@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include "keyboard.h"
 
-
 int main(int argc, char *argv[])
 {
     setuid(0);
