@@ -299,7 +299,7 @@
                     "type": "key",
                     "code": 42,
                     "label": "Shift",
-                    "columnSpan": 2.25
+                    "columnSpan": 2
                 },
                 {
                     "type": "key",
@@ -353,9 +353,14 @@
                 },
                 {
                     "type": "key",
+                    "code": 103,
+                    "label": "↑"
+                },
+                {
+                    "type": "key",
                     "code": 54,
                     "label": "Shift",
-                    "columnSpan": 2.75
+                    "columnSpan": 2
                 }
             ]
         },
@@ -385,17 +390,22 @@
                     "type": "key",
                     "code": 57,
                     "label": "Space",
-                    "columnSpan": 5.5
+                    "columnSpan": 5
+                },
+                {
+                    "type": "special",
+                    "code": 1,
+                    "label": "↕",
+                    "styleSheet": "color: #D46A6A;"
+                },
+                {
+                    "type": "special",
+                    "code": 2
                 },
                 {
                     "type": "key",
                     "code": 105,
                     "label": "←"
-                },
-                {
-                    "type": "key",
-                    "code": 103,
-                    "label": "↑"
                 },
                 {
                     "type": "key",
@@ -406,13 +416,7 @@
                     "type": "key",
                     "code": 106,
                     "label": "→"
-                },
-                {
-                    "type": "special",
-                    "code": 1,
-                    "label": "↕",
-                    "styleSheet": "color: #D46A6A;"
-                },
+                },               
                 {
                     "type": "special",
                     "code": 0,
@@ -422,5 +426,16 @@
             ]
         }
     ],
-    "customKeys": []
+    "customKeys": [
+        {
+            "x":0.666,
+            "y":0.87,
+            "w":0.067,
+            "h":0.06,
+            "type": "special",
+            "code": 0,
+            "label": "⏻",
+            "styleSheet": "color: #D46A6A;"
+        }
+    ]
 }

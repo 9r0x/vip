@@ -60,9 +60,3 @@ protected:
 };
 
 #define SPECIAL_PLACEHOLDER 2
-class PlaceholderKey : public Key
-{
-public:
-    explicit PlaceholderKey(int x, int y, int w, int h,
-                            QString label, QString stylesheet, QWidget *parent);
-};

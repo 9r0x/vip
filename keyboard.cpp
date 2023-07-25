@@ -30,7 +30,102 @@ Keyboard::Keyboard(QWidget *parent) : KXmlGuiWindow(parent)
         exit(1);
     }
     setupUI(layout);
+    setupRows(layout);
+    setupCustomKeys(layout);
+}
 
+Keyboard::~Keyboard()
+{
+    ioctl(fd, UI_DEV_DESTROY);
+    ::close(fd);
+}
+
+void Keyboard::initvdev()
+{
+    struct uinput_setup usetup;
+
+    fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+
+    // https://www.kernel.org/doc/html/v6.4/input/event-codes.html
+    ioctl(fd, UI_SET_EVBIT, EV_KEY);
+    for (int i = 0; i < 256; i++)
+        ioctl(fd, UI_SET_KEYBIT, i);
+
+    memset(&usetup, 0, sizeof(usetup));
+    usetup.id.bustype = BUS_USB;
+    // TODO config
+    usetup.id.vendor = 0xFFFF;
+    usetup.id.product = 0xFFFF;
+    strncpy(usetup.name, "Virtual Keyboard", UINPUT_MAX_NAME_SIZE);
+
+    ioctl(fd, UI_DEV_SETUP, &usetup);
+    ioctl(fd, UI_DEV_CREATE);
+}
+
+QSharedPointer<QJsonObject> Keyboard::loadLayout(QString filename)
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qWarning() << "Invalid Config File";
+        exit(1);
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    if (parseError.error == QJsonParseError::NoError)
+    {
+        QSharedPointer<QJsonObject> layout = QSharedPointer<QJsonObject>::create(doc.object());
+        return layout;
+    }
+    else
+    {
+        qWarning() << "Invalid JSON";
+        exit(1);
+    }
+}
+
+void Keyboard::setupUI(QSharedPointer<QJsonObject> layout)
+{
+    setFocusPolicy(Qt::NoFocus);
+    setAttribute(Qt::WA_ShowWithoutActivating);
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::ToolTip | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QSize screenSize = screen->size();
+    int x = 0;
+    int y = 0;
+
+    if (layout->contains("totalWidth"))
+        totalWidth = (*layout)["totalWidth"].toInt();
+    else
+        totalWidth = screenSize.width();
+    if (layout->contains("totalHeight"))
+        totalHeight = (*layout)["totalHeight"].toInt();
+    else
+        totalHeight = screenSize.height() / 2;
+    if (layout->contains("x"))
+        x = (*layout)["x"].toInt();
+    else
+        x = (screenSize.width() - totalWidth) / 2;
+    if (layout->contains("y"))
+        y = (*layout)["y"].toInt();
+    else
+        y = screenSize.height() - totalHeight;
+
+    setGeometry(x, y, totalWidth, totalHeight);
+
+    if (layout->contains("styleSheet"))
+        styleSheet = (*layout)["styleSheet"].toString();
+}
+
+void Keyboard::setupRows(QSharedPointer<QJsonObject> layout)
+{
     QJsonArray rows = (*layout)["rows"].toArray();
     int nRows = rows.size();
     double rowSpanSum = 0.0;
@@ -96,7 +191,6 @@ Keyboard::Keyboard(QWidget *parent) : KXmlGuiWindow(parent)
         double unitWidth = (totalWidth - (nKeys - 1) * 0) / columnSpanSum;
 
         // pass 2: resize keys by their columnSpan
-        // TODO spacing
         int x = 0;
         for (int j = 0; j < nKeys; ++j)
         {
@@ -110,93 +204,18 @@ Keyboard::Keyboard(QWidget *parent) : KXmlGuiWindow(parent)
     }
 }
 
-Keyboard::~Keyboard()
+void Keyboard::setupCustomKeys(QSharedPointer<QJsonObject> layout)
 {
-    ioctl(fd, UI_DEV_DESTROY);
-    ::close(fd);
-}
-
-void Keyboard::initvdev()
-{
-    struct uinput_setup usetup;
-
-    fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
-
-    // https://www.kernel.org/doc/html/v6.4/input/event-codes.html
-    ioctl(fd, UI_SET_EVBIT, EV_KEY);
-    for (int i = 0; i < 256; i++)
-        ioctl(fd, UI_SET_KEYBIT, i);
-
-    memset(&usetup, 0, sizeof(usetup));
-    usetup.id.bustype = BUS_USB;
-    // TODO config
-    usetup.id.vendor = 0xFFFF;
-    usetup.id.product = 0xFFFF;
-    strncpy(usetup.name, "Virtual Keyboard", UINPUT_MAX_NAME_SIZE);
-
-    ioctl(fd, UI_DEV_SETUP, &usetup);
-    ioctl(fd, UI_DEV_CREATE);
-}
-
-void Keyboard::setupUI(QSharedPointer<QJsonObject> layout)
-{
-    setFocusPolicy(Qt::NoFocus);
-    setAttribute(Qt::WA_ShowWithoutActivating);
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::ToolTip | Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QSize screenSize = screen->size();
-    int x = 0;
-    int y = 0;
-
-    if (layout->contains("totalWidth"))
-        totalWidth = (*layout)["totalWidth"].toInt();
-    else
-        totalWidth = screenSize.width();
-    if (layout->contains("totalHeight"))
-        totalHeight = (*layout)["totalHeight"].toInt();
-    else
-        totalHeight = screenSize.height() / 2;
-    if (layout->contains("x"))
-        x = (*layout)["x"].toInt();
-    else
-        x = (screenSize.width() - totalWidth) / 2;
-    if (layout->contains("y"))
-        y = (*layout)["y"].toInt();
-    else
-        y = screenSize.height() - totalHeight;
-
-    setGeometry(x, y, totalWidth, totalHeight);
-
-    if (layout->contains("styleSheet"))
-        styleSheet = (*layout)["styleSheet"].toString();
-}
-
-QSharedPointer<QJsonObject> Keyboard::loadLayout(QString filename)
-{
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    QJsonArray customKeys = (*layout)["customKeys"].toArray();
+    int nKeys = customKeys.size();
+    for (int i = 0; i < nKeys; ++i)
     {
-        qWarning() << "Invalid Config File";
-        exit(1);
-    }
-
-    QByteArray jsonData = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
-
-    if (parseError.error == QJsonParseError::NoError)
-    {
-        QSharedPointer<QJsonObject> layout = QSharedPointer<QJsonObject>::create(doc.object());
-        return layout;
-    }
-    else
-    {
-        qWarning() << "Invalid JSON";
-        exit(1);
+        QJsonObject keyObject = customKeys[i].toObject();
+        int x = keyObject["x"].toDouble() * totalWidth;
+        int y = keyObject["y"].toDouble() * totalHeight;
+        int w = keyObject["w"].toDouble() * totalWidth;
+        int h = keyObject["h"].toDouble() * totalHeight;
+        setupKey(&keyObject, x, y, w, h);
     }
 }
 
@@ -267,6 +286,10 @@ void Keyboard::setupKey(QJsonObject *keyObject, int x, int y, int w, int h)
             RepositionKey *key = new RepositionKey(x, y, w, h,
                                                    label, keyStylesheet, this);
             keys.append(key);
+            break;
+        }
+        case SPECIAL_PLACEHOLDER:
+        {
             break;
         }
         default:

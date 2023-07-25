@@ -68,10 +68,13 @@ This JSON representation aims to provide a comprehensive and flexible way to des
 - [x] Support either click / touch event
 - [x] Custom theme
 - [x] Special key for panel reposition
-- [ ] Touch / button emulation
+- [x] Placeholder that reserves space for custom keys
+- [x] Custom keys
+- [ ] Mouse emulation
 - [ ] Haptic feedback(sound, effects?)
 - [ ] Support for input macro
 - [ ] Layout switch
+- [ ] Spacing config
 - [ ] Improve reposition smoothness
 - [ ] Special key for panel zoom
 - [ ] System level config at /etc/vip.d/\*.json

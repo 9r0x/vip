@@ -20,6 +20,8 @@ protected:
     void initvdev();
     QSharedPointer<QJsonObject> loadLayout(QString);
     void setupUI(QSharedPointer<QJsonObject> layout);
+    void setupRows(QSharedPointer<QJsonObject> layout);
+    void setupCustomKeys(QSharedPointer<QJsonObject> layout);
     void setupKey(QJsonObject *keyObject,
                   int x, int y, int w, int h);
 };
