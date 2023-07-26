@@ -13,6 +13,13 @@ Key::Key(int x, int y, int w, int h, QString label, QString stylesheet, QWidget 
 
     setAttribute(Qt::WA_AcceptTouchEvents);
 
+#ifdef MOUSE_EVENT
+    connect(this, SIGNAL(pressed()),
+            this, SLOT(mousePressed()));
+    connect(this, SIGNAL(released()),
+            this, SLOT(mouseReleased()));
+#endif
+
     // QPushButton:hover {border:none;} removes the border around the touched key
     setStyleSheet("QPushButton {" + ((Keyboard *)parentWidget())->styleSheet + stylesheet +
                   "} QPushButton:hover {border:none;}");
@@ -44,7 +51,21 @@ bool Key::event(QEvent *event)
     return QPushButton::event(event);
 }
 
-void Key::pressed([[maybe_unused]] QEvent *event) {}
+#ifdef MOUSE_EVENT
+void Key::mousePressed()
+{
+    pressed(NULL);
+}
+
+void Key::mouseReleased()
+{
+    released(NULL);
+}
+#endif
+
+void Key::pressed([[maybe_unused]] QEvent *event)
+{
+}
 void Key::updated([[maybe_unused]] QEvent *event) {}
 void Key::released([[maybe_unused]] QEvent *event) {}
 

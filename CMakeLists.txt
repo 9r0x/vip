@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 
 project(vip)
 
+add_definitions(-DMOUSE_EVENT)
+
 set(QT_MIN_VERSION "5.15.10")
 set(KF5_MIN_VERSION "5.78.0")
 

@@ -8,10 +8,20 @@ extern int fd;
 
 class Key : public QPushButton
 {
+#ifdef MOUSE_EVENT
+    Q_OBJECT
+#endif
+
 public:
     explicit Key(int x, int y, int w, int h,
                  QString label, QString stylesheet, QWidget *parent);
     QString label;
+
+#ifdef MOUSE_EVENT
+public slots:
+    void mousePressed();
+    void mouseReleased();
+#endif
 
 protected:
     bool event(QEvent *event) override;
@@ -23,6 +33,9 @@ protected:
 
 class RegularKey : public Key
 {
+#ifdef MOUSE_EVENT
+    Q_OBJECT
+#endif
 public:
     explicit RegularKey(int x, int y, int w, int h,
                         int code, QString label, QString stylesheet, QWidget *parent);
@@ -37,6 +50,9 @@ protected:
 #define SPECIAL_EXIT 0
 class ExitKey : public Key
 {
+#ifdef MOUSE_EVENT
+    Q_OBJECT
+#endif
 public:
     explicit ExitKey(int x, int y, int w, int h,
                      QString label, QString stylesheet, QWidget *parent);
