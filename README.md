@@ -7,6 +7,11 @@ Author: Shukai Ni
 ## Build and Install
 
 ```shell
+# PKGBUILD works manually
+makepkg -si
+```
+
+```shell
 yay -S extra-cmake-modules
 kf5-config --version
 ```
@@ -20,16 +25,20 @@ sudo chmod 4755 build/vip
 
 ## Why Virtual Input Panel is more than on-screen keyboard(OSK)
 
-1. Touchscreen support
-2. Flexible configuration for layout, style, and input devices(keyboard, mouse, etc.)
-3. Kernel level input event support
-4. Near real-keyboard experience: modifier keys work like real keyboard
-5. Orthogonal to input methods and system hotkeys
+1. Enhanced touchscreen compatibility in Wayland-based KDE Plasma environment.
+2. Flexible layout, theme, and input device configuration (e.g., Keyboard, Mouse) options.
+3. Kernel-level handling of input events.
+4. Comprehensive support for modifier keys.
+5. Extensive integration of input methods.
+6. Full system hotkeys compatibility.
+7. Seamless recognition of simultaneous key presses.
+8. Panel repositioning enabled through dragging the reposition key.
+9. Dynamic pointer movement simulation (relative or absolute).
 
 ## Notes
 
-1. Mouse events are not enabled by default and discouraged, because a simulated mouse event would create a event loop without careful layout design.
-2. Right ctrl and right alt is by default not included because 1) to save layout space so that other keys have sufficient size 2) it is hard to press right ctrl and right alt on a touchscreen
+1. Mouse(instead of touch) events are not enabled by default and discouraged, because a simulated mouse event would create a event loop without careful layout design. Enable it by removing `add_definitions(-DMOUSE_EVENT)`.
+2. Right ctrl and right alt is by default not included to save layout space.
 
 ## Keyboard JSON Representation Documentation
 
@@ -59,22 +68,52 @@ The following is a detailed documentation for the JSON representation of a keybo
 
     - style (string, optional): The CSS style for the key. It is a string that can be used to specify the style of the key. For example, "background-color: #ffffff; color: #000000".
 
+- customKeys (array, optional): An array of objects representing custom keys. Custom keys are keys that are not part of the keyboard layout, but are displayed on the keyboard. For example, a custom key can be used to display a logo or a special key that is not part of the keyboard layout. Custom keys are displayed on top of the keyboard layout. Use `placeholder` keys to reserve space for custom keys.
+
+  - type (string): The type of the key. This can include values like "key," "mouse_button," "modifier," "special," etc. This allows for future extension to include different types of keys with specific behaviors.
+
+  - code (integer): The key code or identifier for the key. This could be an integer (e.g., 1, 2, 16, etc.) from `/usr/include/linux/input-event-codes.h`.
+
+  - label (string, optional): The label displayed on the key. It provides a human-readable description for the key. For example, "Esc" for the escape key.
+
+  - x (double): Ratio of the x coordinate of the key relative to the total width.
+
+  - y (double): Ratio of the y coordinate of the key relative to the total height.
+
+  - w (double): Ratio of the width of the key relative to the total width.
+
+  - h (double): Ratio of the height of the key relative to the total height.
+
+  - style (string, optional): The CSS style for the key. It is a string that can be used to specify the style of the key. For example, "background-color: #ffffff; color: #000000".
+
 This JSON representation aims to provide a comprehensive and flexible way to describe keyboard layouts while supporting easy modifications and extensions in the future. It allows for capturing various keyboard configurations, key types, and weights to accommodate different key sizes and layouts in modern keyboard designs.
+
+## Key types
+
+### Regular key
+
+### Mouse key
+
+### Special key
 
 ## TODO
 
-- [x] Exit key
-- [x] Multi touch event to support multiple touch
-- [x] Support either click / touch event
-- [x] Custom theme
-- [x] Special key for panel reposition
-- [x] Placeholder that reserves space for custom keys
-- [x] Custom keys
-- [ ] Mouse emulation
-- [ ] Haptic feedback(sound, effects?)
-- [ ] Support for input macro
-- [ ] Layout switch
-- [ ] Spacing config
-- [ ] Improve reposition smoothness
-- [ ] Special key for panel zoom
-- [ ] System level config at /etc/vip.d/\*.json
+- [x] Exit Key: Implementation of an exit key to close the application
+- [x] Multi-Touch Event: Implementation of multi-touch support to handle multiple touch inputs concurrently
+- [x] Click/Touch Event Support: Provision of support for both click and touch events as input methods.
+- [x] Custom Theme: Incorporation of a customizable theme feature allowing users to personalize the appearance of the application.
+- [x] Special Key for Panel Reposition: Introduction of a dedicated key to facilitate repositioning of application panels.
+- [x] Placeholder for Custom Keys: Provision of a placeholder to reserve space for custom keys, which users can define according to their requirements.
+- [x] Custom keys: Keys that are not part of the keyboard layout, but are displayed on the keyboard at predefined locations.
+- [x] Mouse Emulation: Implementation of mouse emulation to simulate mouse actions.
+  - [x] Relative update: requires `BUTTON_LEFT` to function
+  - [x] Absolute update: requires struct uinput_abs_setup setup
+- [x] PKGBUILD: package build script used in Arch Linux and related distributions.
+- [ ] Input macro: Future support for input macros, allowing users to create and execute predefined sequences of actions.
+- [ ] System level config: System-level configuration at /etc/vip.d/\*.json
+- [ ] Layout switch: Implementation of a layout switch feature to enable users to change the keyboard layout dynamically.
+- [ ] Haptic feedback: Addition of sound/effects for both key press and release events to enhance user experience.
+- [ ] Spoofing: spoof the device's vendor id and name.
+- [ ] Spacing config: Option to configure the spacing between keys and elements for better layout customization.
+- [ ] Verify PKGBUILD: ensure correctness and security.
+- [ ] Improve reposition smoothness: Enhancements to the repositioning feature to provide smoother and more seamless drag.

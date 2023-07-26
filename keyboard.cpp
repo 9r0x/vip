@@ -43,22 +43,51 @@ Keyboard::~Keyboard()
 void Keyboard::initvdev()
 {
     struct uinput_setup usetup;
+    struct uinput_abs_setup abs_usetup_x;
+    struct uinput_abs_setup abs_usetup_y;
 
     fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 
     // https://www.kernel.org/doc/html/v6.4/input/event-codes.html
     ioctl(fd, UI_SET_EVBIT, EV_KEY);
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < 248; i++)
         ioctl(fd, UI_SET_KEYBIT, i);
+    // Without BTN_LEFT, the mouse will not work
+    ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
+
+    ioctl(fd, UI_SET_EVBIT, EV_REL);
+    ioctl(fd, UI_SET_RELBIT, REL_X);
+    ioctl(fd, UI_SET_RELBIT, REL_Y);
+
+    ioctl(fd, UI_SET_EVBIT, EV_ABS);
+    ioctl(fd, UI_SET_ABSBIT, ABS_X);
+    ioctl(fd, UI_SET_ABSBIT, ABS_Y);
+
+    ioctl(fd, UI_SET_PROPBIT, INPUT_PROP_POINTER);
+    ioctl(fd, UI_SET_PROPBIT, INPUT_PROP_DIRECT);
 
     memset(&usetup, 0, sizeof(usetup));
     usetup.id.bustype = BUS_USB;
-    // TODO config
     usetup.id.vendor = 0xFFFF;
     usetup.id.product = 0xFFFF;
-    strncpy(usetup.name, "Virtual Keyboard", UINPUT_MAX_NAME_SIZE);
-
+    strncpy(usetup.name, "Virtual Input", UINPUT_MAX_NAME_SIZE);
     ioctl(fd, UI_DEV_SETUP, &usetup);
+
+    // ABS setup is independent
+    // Without this, typing would not work
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QSize screenSize = screen->size();
+
+    memset(&abs_usetup_x, 0, sizeof(abs_usetup_x));
+    abs_usetup_x.code = ABS_X;
+    abs_usetup_x.absinfo.maximum = screenSize.width();
+    ioctl(fd, UI_ABS_SETUP, &abs_usetup_x);
+
+    memset(&abs_usetup_y, 0, sizeof(abs_usetup_y));
+    abs_usetup_y.code = ABS_Y;
+    abs_usetup_y.absinfo.maximum = screenSize.height();
+    ioctl(fd, UI_ABS_SETUP, &abs_usetup_y);
+
     ioctl(fd, UI_DEV_CREATE);
 }
 
@@ -215,6 +244,12 @@ void Keyboard::setupCustomKeys(QSharedPointer<QJsonObject> layout)
         int y = keyObject["y"].toDouble() * totalHeight;
         int w = keyObject["w"].toDouble() * totalWidth;
         int h = keyObject["h"].toDouble() * totalHeight;
+        if (x < 0 || x >= totalWidth || y < 0 || y >= totalHeight ||
+            w <= 0 || w > totalWidth || h <= 0 || h > totalHeight)
+        {
+            qWarning() << "Invalid Custom Key";
+            exit(1);
+        }
         setupKey(&keyObject, x, y, w, h);
     }
 }
@@ -258,6 +293,44 @@ void Keyboard::setupKey(QJsonObject *keyObject, int x, int y, int w, int h)
             keyStylesheet = (*keyObject)["styleSheet"].toString();
 
         RegularKey *key = new RegularKey(x, y, w, h, code, label, keyStylesheet, this);
+        keys.append(key);
+    }
+    else if (type == "mouse")
+    {
+        QString mouseType;
+        int mouseX, mouseY;
+
+        if (!keyObject->contains("mouseType"))
+        {
+            qWarning() << "Invalid Mouse Key";
+            exit(1);
+        }
+        else
+            // Type checking in instantiation
+            mouseType = (*keyObject)["mouseType"].toString();
+
+        if (!keyObject->contains("mouseX") || !keyObject->contains("mouseY"))
+        {
+            qWarning() << "Invalid Mouse Key";
+            exit(1);
+        }
+        else
+        {
+            mouseX = (int)((*keyObject)["mouseX"].toDouble() * totalWidth);
+            mouseY = (int)((*keyObject)["mouseY"].toDouble() * totalHeight);
+        }
+
+        if (keyObject->contains("label"))
+            label = (*keyObject)["label"].toString();
+        else
+            label = mouseType;
+
+        QString keyStylesheet = "";
+        if (keyObject->contains("styleSheet"))
+            keyStylesheet = (*keyObject)["styleSheet"].toString();
+
+        MouseKey *key = new MouseKey(x, y, w, h, mouseType, mouseX, mouseY,
+                                     label, keyStylesheet, this);
         keys.append(key);
     }
     else if (type == "special")

@@ -25,6 +25,7 @@ public slots:
 
 protected:
     bool event(QEvent *event) override;
+    void emitKey(int fd, int type, int code, int val);
     // Use vitual so that event() call the overriden methods
     virtual void pressed(QEvent *event);
     virtual void updated(QEvent *event);
@@ -42,8 +43,21 @@ public:
     int code;
 
 protected:
-    virtual void emitkey(int fd, int type, int code, int val);
     void pressed(QEvent *event) override;
+    void released(QEvent *event) override;
+};
+
+class MouseKey : public Key
+{
+#ifdef MOUSE_EVENT
+    Q_OBJECT
+#endif
+public:
+    explicit MouseKey(int x, int y, int w, int h, QString mouseType, int mouseX, int mouseY,
+                      QString label, QString stylesheet, QWidget *parent);
+    int mouseType, mouseX, mouseY;
+
+protected:
     void released(QEvent *event) override;
 };
 

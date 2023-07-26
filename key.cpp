@@ -1,6 +1,5 @@
 #include <QTouchEvent>
 #include <QDebug>
-
 #include <linux/uinput.h>
 #include <unistd.h>
 #include "keyboard.h"
@@ -69,14 +68,7 @@ void Key::pressed([[maybe_unused]] QEvent *event)
 void Key::updated([[maybe_unused]] QEvent *event) {}
 void Key::released([[maybe_unused]] QEvent *event) {}
 
-RegularKey::RegularKey(int x, int y, int w, int h, int code,
-                       QString label, QString stylesheet, QWidget *parent)
-    : Key(x, y, w, h, label, stylesheet, parent)
-{
-    this->code = code;
-}
-
-void RegularKey::emitkey(int fd, int type, int code, int val)
+void Key::emitKey(int fd, int type, int code, int val)
 {
     struct input_event ie;
     ie.type = type;
@@ -84,21 +76,67 @@ void RegularKey::emitkey(int fd, int type, int code, int val)
     ie.value = val;
     ie.time.tv_sec = 0;
     ie.time.tv_usec = 0;
-    write(fd, &ie, sizeof(ie));
+    ssize_t bytes_written = write(fd, &ie, sizeof(ie));
+    if (bytes_written < 0)
+    {
+        qWarning() << "write() failed";
+        exit(1);
+    }
 }
 
 #define KEYBOARD_FD (((Keyboard *)parentWidget())->fd)
-#define EMIT_SYN emitkey(KEYBOARD_FD, EV_SYN, SYN_REPORT, 0)
+#define EMIT_SYN emitKey(KEYBOARD_FD, EV_SYN, SYN_REPORT, 0)
+
+RegularKey::RegularKey(int x, int y, int w, int h, int code,
+                       QString label, QString stylesheet, QWidget *parent)
+    : Key(x, y, w, h, label, stylesheet, parent)
+{
+    this->code = code;
+}
 
 void RegularKey::pressed([[maybe_unused]] QEvent *event)
 {
-    emitkey(KEYBOARD_FD, EV_KEY, code, 1);
+    emitKey(KEYBOARD_FD, EV_KEY, code, 1);
     EMIT_SYN;
 }
 
 void RegularKey::released([[maybe_unused]] QEvent *event)
 {
-    emitkey(KEYBOARD_FD, EV_KEY, code, 0);
+    emitKey(KEYBOARD_FD, EV_KEY, code, 0);
+    EMIT_SYN;
+}
+
+MouseKey::MouseKey(int x, int y, int w, int h, QString mouseType, int mouseX, int mouseY,
+                   QString label, QString stylesheet, QWidget *parent)
+    : Key(x, y, w, h, label, stylesheet, parent)
+{
+    if (mouseType == "abs")
+        this->mouseType = EV_ABS;
+    else if (mouseType == "rel")
+        this->mouseType = EV_REL;
+    else
+    {
+        qWarning() << "Invalid mouse type";
+        exit(1);
+    }
+    this->mouseX = mouseX;
+    this->mouseY = mouseY;
+}
+
+void MouseKey::released([[maybe_unused]] QEvent *event)
+{
+    if (mouseType == EV_ABS)
+    {
+        // Uinput seems to not re-send events that does not alter existing value
+        // though other devices(mouse, track pad, etc) may have changed it
+        // Use (0,0) to refresh it
+        emitKey(KEYBOARD_FD, EV_ABS, ABS_X, 0);
+        emitKey(KEYBOARD_FD, EV_ABS, ABS_Y, 0);
+    }
+    // REL_X = ABS_X = 0x00
+    // REL_Y = ABS_Y = 0x01
+    emitKey(KEYBOARD_FD, mouseType, 0, mouseX);
+    emitKey(KEYBOARD_FD, mouseType, 1, mouseY);
     EMIT_SYN;
 }
 
