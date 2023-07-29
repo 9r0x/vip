@@ -91,7 +91,7 @@ The following is a detailed documentation for the JSON representation of a keybo
 
   - length = 1: sleep array[0] microseconds
 
-  - length = 2: repeat previous array[0] actions for array[1] times
+  - length = 2: repeat following array[0] lines for array[1] times
 
   - length = 3: calls key actions with type = array[0], code = array[1], value = array[2]
 
@@ -121,7 +121,7 @@ This JSON representation aims to provide a comprehensive and flexible way to des
   - [x] Absolute update: requires struct uinput_abs_setup setup
 - [x] PKGBUILD: package build script used in Arch Linux and related distributions.
 - [x] Input macro: allowing users to create and execute predefined sequences of actions.
-- [ ] System level config: System-level configuration at /etc/vip.d/\*.json
+- [x] System level config: System-level configuration at /etc/vip.d/\*.json
 - [ ] Layout switch: Implementation of a layout switch feature to enable users to change the keyboard layout dynamically.
 - [ ] Improve README.md: Add more details to the README.md file, especially for the JSON representation and key types.
 - [ ] Haptic feedback: Addition of sound/effects for both key press and release events to enhance user experience.

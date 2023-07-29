@@ -15,9 +15,8 @@
 #include "keyboard.h"
 #include "key.h"
 
-Keyboard::Keyboard(QWidget *parent) : KXmlGuiWindow(parent)
+Keyboard::Keyboard(QString fileName, QWidget *parent) : KXmlGuiWindow(parent)
 {
-    QString fileName = ":/config/layout";
     totalWidth = 0;
     totalHeight = 0;
 

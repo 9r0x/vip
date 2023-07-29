@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/config">
-        <file alias="layout">layout.json</file>
+        <file alias="layout">config/layout.json</file>
     </qresource>
 </RCC>

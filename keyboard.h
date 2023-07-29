@@ -7,7 +7,7 @@ class Keyboard : public KXmlGuiWindow
 {
     Q_OBJECT
 public:
-    explicit Keyboard(QWidget *parent = nullptr);
+    explicit Keyboard(QString fileName, QWidget *parent = nullptr);
     ~Keyboard();
     int fd;
     QString styleSheet;

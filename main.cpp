@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QDir>
 #include <KLocalizedString>
 #include <unistd.h>
 #include "keyboard.h"
@@ -14,7 +15,10 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain("vip");
 
-    Keyboard *keyboard = new Keyboard();
+    QString configRoot = "/etc/vip.d";
+    QString fileName = QDir(configRoot).entryList({"*.json"}).first();
+    qDebug() << "Using" << configRoot + "/" + fileName;
+    Keyboard *keyboard = new Keyboard(configRoot + "/" + fileName);
     keyboard->show();
 
     return app.exec();
