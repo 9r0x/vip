@@ -1,5 +1,6 @@
 #include <QTouchEvent>
 #include <QDebug>
+#include <QJsonArray>
 #include <linux/uinput.h>
 #include <unistd.h>
 #include "keyboard.h"
@@ -171,4 +172,60 @@ void RepositionKey::updated(QEvent *event)
     prevTouchY = currentTouchY;
 
     parentWidget()->move(parentWidget()->x(), parentWidget()->y() + deltaY);
+}
+
+MacroKey::MacroKey(int x, int y, int w, int h, QJsonArray macro,
+                   QString label, QString stylesheet, QWidget *parent)
+    : Key(x, y, w, h, label, stylesheet, parent)
+{
+    this->macro = macro;
+}
+
+void MacroKey::released([[maybe_unused]] QEvent *event)
+{
+    processMacro(macro, 0, macro.size());
+}
+
+void MacroKey::processMacro(const QJsonArray &p, int start, int n)
+{
+    if (start + n > p.size())
+        qWarning() << "MacroKey::processMacro() : Invalid macro size";
+
+    int i = start;
+    while (i < start + n)
+    {
+        QJsonArray action = p[i].toArray();
+        int size = action.size();
+        switch (size)
+        {
+        case 1:
+        {
+            usleep(action[0].toInt());
+            break;
+        }
+        case 2:
+        {
+            int lines = action[0].toInt();
+            int repeat = action[1].toInt();
+            for (int j = 0; j < repeat; j++)
+                processMacro(p, i + 1, lines);
+            i += lines;
+            break;
+        }
+        case 3:
+        {
+            int type = action[0].toInt();
+            int code = action[1].toInt();
+            int val = action[2].toInt();
+            emitKey(KEYBOARD_FD, type, code, val);
+            break;
+        }
+        default:
+        {
+            qWarning() << "Invalid macro size at index" << i;
+            exit(1);
+        }
+        }
+        i++;
+    }
 }

@@ -34,6 +34,7 @@ sudo chmod 4755 build/vip
 7. Seamless recognition of simultaneous key presses.
 8. Panel repositioning enabled through dragging the reposition key.
 9. Dynamic pointer movement simulation (relative or absolute).
+10. Macro execution for a sequence of actions with a single key press(keys, mouses, sleeps, nested loops).
 
 ## Notes
 
@@ -86,6 +87,14 @@ The following is a detailed documentation for the JSON representation of a keybo
 
   - style (string, optional): The CSS style for the key. It is a string that can be used to specify the style of the key. For example, "background-color: #ffffff; color: #000000".
 
+- macros (array, optional): An array of objects representing macros. Macros are predefined sequences of actions that can be executed by pressing a single key. For example, a macro can be used to execute a sequence of key presses to open a specific application. Macros are executed in the order they are defined in the array.
+
+  - length = 1: sleep array[0] microseconds
+
+  - length = 2: repeat previous array[0] actions for array[1] times
+
+  - length = 3: calls key actions with type = array[0], code = array[1], value = array[2]
+
 This JSON representation aims to provide a comprehensive and flexible way to describe keyboard layouts while supporting easy modifications and extensions in the future. It allows for capturing various keyboard configurations, key types, and weights to accommodate different key sizes and layouts in modern keyboard designs.
 
 ## Key types
@@ -95,6 +104,8 @@ This JSON representation aims to provide a comprehensive and flexible way to des
 ### Mouse key
 
 ### Special key
+
+### Macro key
 
 ## TODO
 
@@ -109,9 +120,10 @@ This JSON representation aims to provide a comprehensive and flexible way to des
   - [x] Relative update: requires `BUTTON_LEFT` to function
   - [x] Absolute update: requires struct uinput_abs_setup setup
 - [x] PKGBUILD: package build script used in Arch Linux and related distributions.
-- [ ] Input macro: Future support for input macros, allowing users to create and execute predefined sequences of actions.
+- [x] Input macro: allowing users to create and execute predefined sequences of actions.
 - [ ] System level config: System-level configuration at /etc/vip.d/\*.json
 - [ ] Layout switch: Implementation of a layout switch feature to enable users to change the keyboard layout dynamically.
+- [ ] Improve README.md: Add more details to the README.md file, especially for the JSON representation and key types.
 - [ ] Haptic feedback: Addition of sound/effects for both key press and release events to enhance user experience.
 - [ ] Spoofing: spoof the device's vendor id and name.
 - [ ] Spacing config: Option to configure the spacing between keys and elements for better layout customization.

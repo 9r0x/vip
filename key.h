@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QPushButton>
+#include <QJsonArray>
 
 extern int fd;
 
@@ -90,3 +91,18 @@ protected:
 };
 
 #define SPECIAL_PLACEHOLDER 2
+
+class MacroKey : public Key
+{
+#ifdef MOUSE_EVENT
+    Q_OBJECT
+#endif
+public:
+    explicit MacroKey(int x, int y, int w, int h, QJsonArray macro,
+                      QString label, QString stylesheet, QWidget *parent);
+    QJsonArray macro;
+
+protected:
+    void released(QEvent *event) override;
+    void processMacro(const QJsonArray &p, int start, int n);
+};

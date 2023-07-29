@@ -225,7 +225,7 @@ void Keyboard::setupRows(QSharedPointer<QJsonObject> layout)
         {
             QJsonObject keyObject = rowKeys[j].toObject();
             int width = (int)(unitWidth * rowKeys[j].toObject()["columnSpan"].toDouble());
-            setupKey(&keyObject, x, y, width, height);
+            setupKey(layout, &keyObject, x, y, width, height);
             x += width;
         }
 
@@ -250,11 +250,12 @@ void Keyboard::setupCustomKeys(QSharedPointer<QJsonObject> layout)
             qWarning() << "Invalid Custom Key";
             exit(1);
         }
-        setupKey(&keyObject, x, y, w, h);
+        setupKey(layout, &keyObject, x, y, w, h);
     }
 }
 
-void Keyboard::setupKey(QJsonObject *keyObject, int x, int y, int w, int h)
+void Keyboard::setupKey(QSharedPointer<QJsonObject> layout, QJsonObject *keyObject,
+                        int x, int y, int w, int h)
 {
     int code = 0;
     QString label;
@@ -371,6 +372,23 @@ void Keyboard::setupKey(QJsonObject *keyObject, int x, int y, int w, int h)
             exit(1);
         }
         }
+    }
+    else if (type == "macro")
+    {
+        QString keyStylesheet = "";
+        int macro = (*keyObject)["macro"].toInt();
+
+        if (keyObject->contains("label"))
+            label = (*keyObject)["label"].toString();
+        else
+            label = macro;
+        if (keyObject->contains("styleSheet"))
+            keyStylesheet = (*keyObject)["styleSheet"].toString();
+
+        MacroKey *key = new MacroKey(x, y, w, h,
+                                     (*layout)["macros"].toArray()[macro].toArray(),
+                                     label, keyStylesheet, this);
+        keys.append(key);
     }
     else
     {

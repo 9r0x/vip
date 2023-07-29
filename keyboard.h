@@ -22,6 +22,6 @@ protected:
     void setupUI(QSharedPointer<QJsonObject> layout);
     void setupRows(QSharedPointer<QJsonObject> layout);
     void setupCustomKeys(QSharedPointer<QJsonObject> layout);
-    void setupKey(QJsonObject *keyObject,
+    void setupKey(QSharedPointer<QJsonObject> layout, QJsonObject *keyObject,
                   int x, int y, int w, int h);
 };
