@@ -1,6 +1,7 @@
 {
   "spacing": 0.05,
-  "styleSheet": "background-color: #003333; color: #669999;",
+  "totalWidth": 1920,
+  "totalHeight": 600,
   "rows": [
     {
       "rowSpan": 0.5,

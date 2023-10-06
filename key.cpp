@@ -162,16 +162,23 @@ RepositionKey::RepositionKey(int x, int y, int w, int h,
 
 void RepositionKey::pressed(QEvent *event)
 {
+    prevTouchX = TOUCH_POS.x();
     prevTouchY = TOUCH_POS.y();
 }
 
 void RepositionKey::updated(QEvent *event)
 {
+    qreal currentTouchX = TOUCH_POS.x();
     qreal currentTouchY = TOUCH_POS.y();
+
+    int deltaX = currentTouchX - prevTouchX;
+    prevTouchX = currentTouchX;
+
     int deltaY = currentTouchY - prevTouchY;
     prevTouchY = currentTouchY;
 
-    parentWidget()->move(parentWidget()->x(), parentWidget()->y() + deltaY);
+    parentWidget()->move(parentWidget()->x() + deltaX,
+                         parentWidget()->y() + deltaY);
 }
 
 MacroKey::MacroKey(int x, int y, int w, int h, QJsonArray macro,

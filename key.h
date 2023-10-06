@@ -84,6 +84,7 @@ public:
                            QString label, QString stylesheet, QWidget *parent);
 
 protected:
+    qreal prevTouchX;
     qreal prevTouchY;
 
     void pressed(QEvent *event) override;
